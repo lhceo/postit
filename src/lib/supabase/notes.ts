@@ -11,26 +11,25 @@ export async function getNotes(sessionId: string) {
   return data as Note[]
 }
 
+// Note: createNote uses the server-side API route to bypass RLS for guest users.
 export async function createNote(
   sessionId: string,
   content: string,
   authorName: string,
-  color: NoteColor = 'yellow'
+  color: NoteColor = 'yellow',
+  parentId?: string
 ) {
-  const { data, error } = await supabase
-    .from('notes')
-    .insert({
-      session_id: sessionId,
-      content,
-      author_name: authorName,
-      color,
-      position_x: Math.random() * 600,
-      position_y: Math.random() * 400,
-    })
-    .select()
-    .single()
-  if (error) throw error
-  return data as Note
+  const res = await fetch('/api/notes', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sessionId, content, authorName, color, parentId }),
+  })
+  if (!res.ok) {
+    const err = await res.json()
+    throw new Error(err.error || 'Failed to create note')
+  }
+  const { note } = await res.json()
+  return note as Note
 }
 
 export async function likeNote(noteId: string, currentLikes: number) {

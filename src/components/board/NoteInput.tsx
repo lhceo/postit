@@ -20,13 +20,20 @@ export function NoteInput({ onSubmit }: NoteInputProps) {
   const [content, setContent] = useState('')
   const [color, setColor] = useState<NoteColor>('yellow')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   async function handleSubmit() {
     if (!content.trim()) return
     setLoading(true)
-    await onSubmit(content.trim(), color)
-    setContent('')
-    setLoading(false)
+    setError(null)
+    try {
+      await onSubmit(content.trim(), color)
+      setContent('')
+    } catch (e) {
+      setError(e instanceof Error ? e.message : '投稿に失敗しました')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -39,6 +46,9 @@ export function NoteInput({ onSubmit }: NoteInputProps) {
         rows={3}
         className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-orange-400 resize-none mb-3"
       />
+      {error && (
+        <p className="text-red-500 text-sm mb-2">{error}</p>
+      )}
       <div className="flex items-center justify-between">
         <div className="flex gap-2">
           {COLORS.map((c) => (

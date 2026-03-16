@@ -23,6 +23,8 @@ export default function Home() {
       const { session, hostId } = await res.json()
       localStorage.setItem(`host_${session.id}`, hostId)
       localStorage.setItem('nickname', 'ホスト')
+      const prev: string[] = JSON.parse(localStorage.getItem('hostSessionIds') ?? '[]')
+      localStorage.setItem('hostSessionIds', JSON.stringify([session.id, ...prev]))
       router.push(`/session/${session.id}`)
     } catch {
       setLoading(false)
@@ -62,6 +64,12 @@ export default function Home() {
               className="w-full bg-white hover:bg-gray-50 text-gray-700 font-bold py-4 rounded-2xl text-lg border-2 border-gray-200 transition"
             >
               セッションに参加する
+            </button>
+            <button
+              onClick={() => router.push('/dashboard')}
+              className="w-full text-gray-400 hover:text-gray-600 text-sm py-2 transition"
+            >
+              マイセッション一覧を見る →
             </button>
           </div>
         )}

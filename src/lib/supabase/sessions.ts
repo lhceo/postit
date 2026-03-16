@@ -1,4 +1,5 @@
 import { supabase } from './client'
+import { supabaseAdmin } from './server'
 import { Session } from '@/types'
 
 export async function createSession(title: string, description: string, hostId: string) {
@@ -30,4 +31,15 @@ export async function getSessionById(id: string) {
     .single()
   if (error) throw error
   return data as Session
+}
+
+export async function getSessionsByIds(ids: string[]) {
+  if (ids.length === 0) return []
+  const { data, error } = await supabaseAdmin
+    .from('sessions')
+    .select('*')
+    .in('id', ids)
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data as Session[]
 }

@@ -20,6 +20,7 @@ export interface Note {
   position_y: number
   likes: number
   category: string | null
+  parent_id: string | null
   created_at: string
 }
 
