@@ -82,14 +82,13 @@ export default function DashboardPage() {
           <h2 className="text-base font-semibold text-gray-300 mb-4">セッション一覧</h2>
           <div className="space-y-3">
             {mockSessions.map((session) => (
-              <Link key={session.id} href={`/dashboard/sessions/${session.id}`} className="block group">
-                <div className="rounded-2xl border border-white/10 bg-white/5 hover:bg-white/8 hover:border-indigo-500/30 transition-all p-5">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="text-white font-medium group-hover:text-indigo-300 transition-colors">{session.title}</h3>
-                        <SessionStatusBadge status={session.status} />
-                      </div>
+              <div key={session.id} className="rounded-2xl border border-white/10 bg-white/5 hover:border-indigo-500/20 transition-all p-5">
+                <div className="flex items-start justify-between gap-4">
+                  <Link href={`/dashboard/sessions/${session.id}`} className="flex-1 min-w-0 group">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-white font-medium group-hover:text-indigo-300 transition-colors">{session.title}</h3>
+                      <SessionStatusBadge status={session.status} />
+                    </div>
                       <p className="text-sm text-gray-500 mt-1 truncate">テーマ: {session.topic}</p>
                       <div className="flex items-center gap-4 mt-3 text-xs text-gray-500">
                         <span className="flex items-center gap-1">
@@ -102,18 +101,25 @@ export default function DashboardPage() {
                         </span>
                         <span>{formatDate(session.createdAt)}</span>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-1 flex-shrink-0">
+                  </Link>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="flex items-center gap-1">
                       {session.categories.map((cat) => (
                         <span key={cat.id} className="w-2 h-2 rounded-full" style={{ backgroundColor: cat.color }} title={cat.name} />
                       ))}
-                      <svg className="w-4 h-4 text-gray-600 group-hover:text-indigo-400 transition-colors ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                      </svg>
                     </div>
+                    <Link
+                      href={`/sessions/${session.id}`}
+                      className="flex items-center gap-1.5 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 text-indigo-400 px-3 py-1.5 text-xs font-medium transition-colors"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      ボードを開く
+                    </Link>
                   </div>
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         </div>
