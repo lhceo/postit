@@ -15,6 +15,18 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   const shareCode = req.nextUrl.searchParams.get('code')
+  const ids = req.nextUrl.searchParams.get('ids')
+
+  if (ids) {
+    try {
+      const { getSessionsByIds } = await import('@/lib/supabase/sessions')
+      const sessions = await getSessionsByIds(ids.split(',').filter(Boolean))
+      return NextResponse.json({ sessions })
+    } catch (error) {
+      return NextResponse.json({ error: 'Failed to fetch sessions' }, { status: 500 })
+    }
+  }
+
   if (!shareCode) return NextResponse.json({ error: 'No code' }, { status: 400 })
   try {
     const session = await getSessionByShareCode(shareCode)

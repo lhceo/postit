@@ -2,23 +2,30 @@
 
 import { useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { supabase } from '@/lib/supabase/client'
 
 export default function JoinPage() {
   const router = useRouter()
   const { sessionId } = useParams()
   const [nickname, setNickname] = useState('')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   async function handleJoin() {
     if (!nickname.trim()) return
     setLoading(true)
-    await supabase.from('participants').insert({
-      session_id: sessionId,
-      nickname: nickname.trim(),
-    })
-    localStorage.setItem('nickname', nickname.trim())
-    router.push(`/session/${sessionId}`)
+    setError(null)
+    try {
+      await fetch('/api/participants', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId, nickname: nickname.trim() }),
+      })
+      localStorage.setItem('nickname', nickname.trim())
+      router.push(`/session/${sessionId}`)
+    } catch {
+      setError('参加に失敗しました。もう一度お試しください。')
+      setLoading(false)
+    }
   }
 
   return (
@@ -27,6 +34,7 @@ export default function JoinPage() {
         <div className="bg-white rounded-2xl p-6 shadow-sm space-y-4">
           <h2 className="text-xl font-bold text-gray-700">ニックネームを入力</h2>
           <p className="text-gray-400 text-sm">アカウント登録不要。ニックネームだけで参加できます。</p>
+          {error && <p className="text-red-500 text-sm">{error}</p>}
           <input
             type="text"
             placeholder="ニックネーム"
