@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Post, Category } from "@/types";
+import { Post, Category, Session } from "@/types";
 import { getSessionById } from "@/lib/mock-data";
-import { notFound } from "next/navigation";
 import { use } from "react";
 
 const POSTIT_COLORS: Record<string, string> = {
@@ -173,21 +172,36 @@ function NicknameModal({ onSubmit }: { onSubmit: (name: string) => void }) {
 
 export default function BoardPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const session = getSessionById(id);
-  if (!session) notFound();
-  const resolvedSession = session;
+  const mockSession = getSessionById(id);
 
+  const [resolvedSession, setResolvedSession] = useState<Session | null>(mockSession ?? null);
   const [nickname, setNickname] = useState<string | null>(null);
-  const [posts, setPosts] = useState<Post[]>(resolvedSession.posts);
+  const [posts, setPosts] = useState<Post[]>(mockSession?.posts ?? []);
   const [showModal, setShowModal] = useState(false);
   const [filterCategoryId, setFilterCategoryId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (resolvedSession) return;
+    try {
+      const stored = JSON.parse(sessionStorage.getItem("newSessions") || "[]") as Session[];
+      const found = stored.find((s) => s.id === id);
+      if (found) {
+        setResolvedSession(found);
+        setPosts(found.posts);
+      } else {
+        window.location.href = "/";
+      }
+    } catch {
+      window.location.href = "/";
+    }
+  }, [id, resolvedSession]);
 
   function handleJoin(name: string) {
     setNickname(name);
   }
 
   function handleAddPost(content: string, categoryId: string, isAnonymous: boolean) {
-    const cat = resolvedSession.categories.find((c) => c.id === categoryId)!;
+    const cat = resolvedSession!.categories.find((c) => c.id === categoryId)!;
     const newPost: Post = {
       id: `p-${Date.now()}`,
       content,
@@ -207,6 +221,14 @@ export default function BoardPage({ params }: { params: Promise<{ id: string }> 
   }
 
   const filtered = filterCategoryId ? posts.filter((p) => p.categoryId === filterCategoryId) : posts;
+
+  if (!resolvedSession) {
+    return (
+      <div className="min-h-screen bg-[#0d0d14] flex items-center justify-center">
+        <div className="text-gray-500 text-sm">読み込み中...</div>
+      </div>
+    );
+  }
 
   if (!nickname) {
     return <NicknameModal onSubmit={handleJoin} />;
