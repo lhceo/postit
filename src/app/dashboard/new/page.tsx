@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 const COLOR_PALETTE = [
@@ -22,7 +21,6 @@ interface DraftCategory {
 }
 
 export default function NewSessionPage() {
-  const router = useRouter();
   const [title, setTitle] = useState("");
   const [topic, setTopic] = useState("");
   const [categories, setCategories] = useState<DraftCategory[]>(
@@ -82,7 +80,7 @@ export default function NewSessionPage() {
       // sessionStorage unavailable, proceed anyway
     }
 
-    router.push("/dashboard?created=" + sessionId);
+    window.location.href = "/dashboard";
   }
 
   return (
