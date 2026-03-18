@@ -8,7 +8,12 @@ import StatCard from "@/components/dashboard/StatCard";
 import { Session, Category } from "@/types";
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("ja-JP", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+  const d = new Date(iso);
+  const month = d.getUTCMonth() + 1;
+  const day = d.getUTCDate();
+  const hour = d.getUTCHours().toString().padStart(2, "0");
+  const min = d.getUTCMinutes().toString().padStart(2, "0");
+  return `${month}月${day}日 ${hour}:${min}`;
 }
 
 const COLOR_PALETTE = [
