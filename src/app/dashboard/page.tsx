@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { mockSessions } from "@/lib/mock-data";
 import SessionStatusBadge from "@/components/dashboard/SessionStatusBadge";
 import StatCard from "@/components/dashboard/StatCard";
-import { Session, Category } from "@/types";
+import { Session } from "@/types";
 
 function formatDate(iso: string) {
   const d = new Date(iso);
@@ -267,20 +267,26 @@ function CreateSessionModal({
 
 export default function DashboardPage() {
   const [sessions, setSessions] = useState<Session[]>(mockSessions);
-  const [showModal, setShowModal] = useState(false);
   const [newSessionId, setNewSessionId] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(sessionStorage.getItem("newSessions") || "[]") as Session[];
+      if (stored.length > 0) {
+        setSessions([...stored, ...mockSessions]);
+        setNewSessionId(stored[0].id);
+        sessionStorage.removeItem("newSessions");
+        setTimeout(() => setNewSessionId(null), 3000);
+      }
+    } catch {
+      // sessionStorage unavailable
+    }
+  }, []);
 
   const totalSessions = sessions.length;
   const activeSessions = sessions.filter((s) => s.status === "active").length;
   const totalPosts = sessions.reduce((sum, s) => sum + s.postCount, 0);
   const totalParticipants = sessions.reduce((sum, s) => sum + s.participantCount, 0);
-
-  function handleCreateSession(session: Session) {
-    setSessions((prev) => [session, ...prev]);
-    setNewSessionId(session.id);
-    setShowModal(false);
-    setTimeout(() => setNewSessionId(null), 3000);
-  }
 
   return (
     <div className="min-h-screen bg-[#0d0d14] text-white">
@@ -311,15 +317,15 @@ export default function DashboardPage() {
             <h1 className="text-2xl font-bold">ダッシュボード</h1>
             <p className="text-gray-400 text-sm mt-1">セッションの管理と分析</p>
           </div>
-          <button
-            onClick={() => setShowModal(true)}
-            className="flex items-center gap-2 rounded-xl bg-indigo-500 hover:bg-indigo-600 active:scale-95 transition-all px-4 py-2.5 text-sm font-medium"
+          <Link
+            href="/dashboard/new"
+            className="flex items-center gap-2 rounded-xl bg-indigo-500 hover:bg-indigo-600 active:scale-95 transition-all px-4 py-2.5 text-sm font-medium text-white"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
             </svg>
             新しいセッション
-          </button>
+          </Link>
         </div>
 
         {/* Stats overview */}
@@ -412,12 +418,6 @@ export default function DashboardPage() {
         </div>
       </main>
 
-      {showModal && (
-        <CreateSessionModal
-          onClose={() => setShowModal(false)}
-          onSubmit={handleCreateSession}
-        />
-      )}
     </div>
   );
 }
