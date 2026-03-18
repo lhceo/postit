@@ -1,32 +1,26 @@
-"use client";
+import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 
-import { useState } from "react";
-import Link from "next/link";
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const { error } = await searchParams;
 
-export default function HomePage() {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState("");
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-
-    if (!title.trim()) {
-      setError("テーマを入力してください");
-      return;
+  async function createSession(formData: FormData) {
+    "use server";
+    const title = (formData.get("title") as string)?.trim();
+    if (!title) {
+      redirect("/?error=empty");
     }
-
-    if (submitting) return;
-    setError("");
-    setSubmitting(true);
-
+    const description = (formData.get("description") as string)?.trim() ?? "";
     const sessionId = `session-${Date.now()}`;
-    const newSession = {
+    const session = {
       id: sessionId,
-      title: title.trim(),
-      topic: description.trim() || title.trim(),
-      status: "active" as const,
+      title,
+      topic: description || title,
+      status: "active",
       participantCount: 0,
       postCount: 0,
       createdAt: new Date().toISOString(),
@@ -37,15 +31,12 @@ export default function HomePage() {
       ],
       posts: [],
     };
-
-    try {
-      const existing = JSON.parse(sessionStorage.getItem("newSessions") || "[]");
-      sessionStorage.setItem("newSessions", JSON.stringify([newSession, ...existing]));
-    } catch {
-      // ignore
-    }
-
-    window.location.href = `/sessions/${sessionId}`;
+    const cookieStore = await cookies();
+    cookieStore.set(`brainstorm-session-${sessionId}`, JSON.stringify(session), {
+      httpOnly: false,
+      maxAge: 60 * 60 * 24,
+    });
+    redirect(`/sessions/${sessionId}`);
   }
 
   return (
@@ -61,23 +52,23 @@ export default function HomePage() {
       <div className="bg-white rounded-2xl shadow-md w-full max-w-md p-8">
         <h2 className="text-xl font-semibold text-gray-800 mb-6">新しいセッション</h2>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form action={createSession} className="space-y-4">
           <div>
             <input
+              name="title"
               autoFocus
-              value={title}
-              onChange={(e) => { setTitle(e.target.value); setError(""); }}
               placeholder="テーマ（例：新サービスのアイデア）"
               maxLength={50}
               className="w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-800 placeholder-gray-400 text-sm focus:outline-none focus:border-orange-400 transition-colors"
             />
-            {error && <p className="mt-1.5 text-xs text-red-500">{error}</p>}
+            {error === "empty" && (
+              <p className="mt-1.5 text-xs text-red-500">テーマを入力してください</p>
+            )}
           </div>
 
           <div>
             <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              name="description"
               placeholder="説明（任意）"
               maxLength={200}
               rows={4}
@@ -87,18 +78,17 @@ export default function HomePage() {
 
           <button
             type="submit"
-            disabled={submitting}
             className="w-full rounded-xl py-3 text-white font-semibold text-sm transition-opacity"
-            style={{ backgroundColor: submitting ? "#fdba74" : "#f97316" }}
+            style={{ backgroundColor: "#f97316" }}
           >
-            {submitting ? "作成中..." : "作成する"}
+            作成する
           </button>
         </form>
 
         <div className="mt-4 text-center">
-          <Link href="/dashboard" className="text-sm text-gray-400 hover:text-gray-600 transition-colors">
+          <a href="/dashboard" className="text-sm text-gray-400 hover:text-gray-600 transition-colors">
             戻る
-          </Link>
+          </a>
         </div>
       </div>
     </div>

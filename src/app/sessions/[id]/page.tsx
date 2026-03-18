@@ -183,6 +183,19 @@ export default function BoardPage({ params }: { params: Promise<{ id: string }> 
   useEffect(() => {
     if (resolvedSession) return;
     try {
+      // Try cookie first (set by Server Action)
+      const cookieMatch = document.cookie
+        .split(";")
+        .map((c) => c.trim())
+        .find((c) => c.startsWith(`brainstorm-session-${id}=`));
+      if (cookieMatch) {
+        const val = decodeURIComponent(cookieMatch.split("=").slice(1).join("="));
+        const found = JSON.parse(val) as Session;
+        setResolvedSession(found);
+        setPosts(found.posts);
+        return;
+      }
+      // Fallback: sessionStorage
       const stored = JSON.parse(sessionStorage.getItem("newSessions") || "[]") as Session[];
       const found = stored.find((s) => s.id === id);
       if (found) {
