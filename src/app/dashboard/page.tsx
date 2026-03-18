@@ -117,9 +117,9 @@ function CreateSessionModal({
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="bg-[#13131f] border border-white/10 rounded-2xl w-full max-w-lg mx-4 shadow-2xl overflow-hidden">
+      <div className="bg-[#13131f] border border-white/10 rounded-2xl w-full max-w-lg mx-4 shadow-2xl flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="px-6 pt-6 pb-4 border-b border-white/10">
+        <div className="px-6 pt-6 pb-4 border-b border-white/10 flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center">
@@ -142,7 +142,7 @@ function CreateSessionModal({
         </div>
 
         {/* Body */}
-        <div className="px-6 py-5 space-y-5 max-h-[70vh] overflow-y-auto">
+        <div className="px-6 py-5 space-y-5 overflow-y-auto flex-1">
           {/* Title */}
           <div>
             <label className="block text-xs font-medium text-gray-400 mb-1.5">
@@ -243,7 +243,7 @@ function CreateSessionModal({
         </div>
 
         {/* Footer */}
-        <div className="px-6 pb-6 pt-4 border-t border-white/10 flex gap-3">
+        <div className="px-6 pb-6 pt-4 border-t border-white/10 flex gap-3 flex-shrink-0">
           <button
             type="button"
             onClick={onClose}
