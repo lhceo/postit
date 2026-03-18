@@ -270,15 +270,38 @@ export default function DashboardPage() {
   const [newSessionId, setNewSessionId] = useState<string | null>(null);
 
   useEffect(() => {
+    const userSessions: Session[] = [];
+
+    // Read sessions created from home page (stored in cookies)
+    try {
+      document.cookie.split(";").forEach((cookie) => {
+        const trimmed = cookie.trim();
+        if (trimmed.startsWith("brainstorm-session-")) {
+          const value = trimmed.slice(trimmed.indexOf("=") + 1);
+          const session = JSON.parse(decodeURIComponent(value)) as Session;
+          userSessions.push(session);
+        }
+      });
+    } catch {
+      // cookie parse error
+    }
+
+    // Read sessions created from dashboard/new (stored in localStorage)
     try {
       const stored = JSON.parse(localStorage.getItem("createdSessions") || "[]") as Session[];
-      if (stored.length > 0) {
-        setSessions([...stored, ...mockSessions]);
-        setNewSessionId(stored[0].id);
-        setTimeout(() => setNewSessionId(null), 3000);
-      }
+      stored.forEach((s) => {
+        if (!userSessions.find((u) => u.id === s.id)) {
+          userSessions.push(s);
+        }
+      });
     } catch {
       // localStorage unavailable
+    }
+
+    if (userSessions.length > 0) {
+      setSessions([...userSessions, ...mockSessions]);
+      setNewSessionId(userSessions[0].id);
+      setTimeout(() => setNewSessionId(null), 3000);
     }
   }, []);
 
