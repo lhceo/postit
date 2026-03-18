@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Post, Category, Session } from "@/types";
 import { getSessionById } from "@/lib/mock-data";

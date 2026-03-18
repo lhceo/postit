@@ -7,10 +7,18 @@ export default function HomePage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!title.trim() || submitting) return;
+
+    if (!title.trim()) {
+      setError("テーマを入力してください");
+      return;
+    }
+
+    if (submitting) return;
+    setError("");
     setSubmitting(true);
 
     const sessionId = `session-${Date.now()}`;
@@ -58,11 +66,12 @@ export default function HomePage() {
             <input
               autoFocus
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="セッション名"
+              onChange={(e) => { setTitle(e.target.value); setError(""); }}
+              placeholder="テーマ（例：新サービスのアイデア）"
               maxLength={50}
               className="w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-800 placeholder-gray-400 text-sm focus:outline-none focus:border-orange-400 transition-colors"
             />
+            {error && <p className="mt-1.5 text-xs text-red-500">{error}</p>}
           </div>
 
           <div>
@@ -78,9 +87,9 @@ export default function HomePage() {
 
           <button
             type="submit"
-            disabled={!title.trim() || submitting}
-            className="w-full rounded-xl py-3 text-white font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
-            style={{ backgroundColor: "#f97316" }}
+            disabled={submitting}
+            className="w-full rounded-xl py-3 text-white font-semibold text-sm transition-opacity"
+            style={{ backgroundColor: submitting ? "#fdba74" : "#f97316" }}
           >
             {submitting ? "作成中..." : "作成する"}
           </button>
