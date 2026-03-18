@@ -1,24 +1,49 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useParams, notFound } from "next/navigation";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import { getSessionById, mockPostTimeSeries } from "@/lib/mock-data";
 import SessionStatusBadge from "@/components/dashboard/SessionStatusBadge";
 import StatCard from "@/components/dashboard/StatCard";
 import IdeaRanking from "@/components/dashboard/IdeaRanking";
 import PostTrendChart from "@/components/dashboard/PostTrendChart";
 import CategoryDistributionChart from "@/components/dashboard/CategoryDistributionChart";
-
-interface Props {
-  params: Promise<{ id: string }>;
-}
+import { Session } from "@/types";
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("ja-JP", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
 }
 
-export default async function SessionDetailPage({ params }: Props) {
-  const { id } = await params;
-  const session = getSessionById(id);
-  if (!session) notFound();
+export default function SessionDetailPage() {
+  const params = useParams();
+  const id = params.id as string;
+  const [session, setSession] = useState<Session | null | undefined>(undefined);
+
+  useEffect(() => {
+    // First check mock data
+    const mock = getSessionById(id);
+    if (mock) {
+      setSession(mock);
+      return;
+    }
+    // Then check localStorage for user-created sessions
+    try {
+      const stored = JSON.parse(localStorage.getItem("createdSessions") || "[]") as Session[];
+      const found = stored.find((s) => s.id === id);
+      setSession(found ?? null);
+    } catch {
+      setSession(null);
+    }
+  }, [id]);
+
+  if (session === undefined) {
+    return <div className="min-h-screen bg-[#0d0d14]" />;
+  }
+
+  if (session === null) {
+    notFound();
+  }
 
   const topPost = [...session.posts].sort((a, b) => b.likes - a.likes)[0];
 
@@ -152,7 +177,7 @@ export default async function SessionDetailPage({ params }: Props) {
           <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
             <h2 className="text-sm font-semibold text-gray-300 mb-4">カテゴリー別投稿数</h2>
             <div className="space-y-3">
-              {session.categories.map((cat) => {
+              {session.postCount > 0 ? session.categories.map((cat) => {
                 const pct = Math.round((cat.postCount / session.postCount) * 100);
                 return (
                   <div key={cat.id}>
@@ -168,7 +193,9 @@ export default async function SessionDetailPage({ params }: Props) {
                     </div>
                   </div>
                 );
-              })}
+              }) : (
+                <p className="text-gray-500 text-sm">まだ投稿がありません</p>
+              )}
             </div>
           </div>
         </div>

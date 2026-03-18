@@ -74,10 +74,10 @@ export default function NewSessionPage() {
     };
 
     try {
-      const existing = JSON.parse(sessionStorage.getItem("newSessions") || "[]");
-      sessionStorage.setItem("newSessions", JSON.stringify([newSession, ...existing]));
+      const existing = JSON.parse(localStorage.getItem("createdSessions") || "[]");
+      localStorage.setItem("createdSessions", JSON.stringify([newSession, ...existing]));
     } catch {
-      // sessionStorage unavailable, proceed anyway
+      // localStorage unavailable, proceed anyway
     }
 
     window.location.href = "/dashboard";

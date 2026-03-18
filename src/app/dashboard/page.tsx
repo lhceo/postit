@@ -271,15 +271,14 @@ export default function DashboardPage() {
 
   useEffect(() => {
     try {
-      const stored = JSON.parse(sessionStorage.getItem("newSessions") || "[]") as Session[];
+      const stored = JSON.parse(localStorage.getItem("createdSessions") || "[]") as Session[];
       if (stored.length > 0) {
         setSessions([...stored, ...mockSessions]);
         setNewSessionId(stored[0].id);
-        sessionStorage.removeItem("newSessions");
         setTimeout(() => setNewSessionId(null), 3000);
       }
     } catch {
-      // sessionStorage unavailable
+      // localStorage unavailable
     }
   }, []);
 
