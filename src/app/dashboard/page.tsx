@@ -62,7 +62,6 @@ function CreateSessionModal({
   onClose: () => void;
   onSubmit: (session: Session) => void;
 }) {
-  const [step, setStep] = useState(1);
   const [title, setTitle] = useState("");
   const [topic, setTopic] = useState("");
   const [categories, setCategories] = useState<DraftCategory[]>(
@@ -111,8 +110,7 @@ function CreateSessionModal({
     onSubmit(newSession);
   }
 
-  const canProceed = title.trim().length > 0 && topic.trim().length > 0;
-  const canSubmit = canProceed && categories.filter((c) => c.name.trim()).length > 0;
+  const canSubmit = title.trim().length > 0 && topic.trim().length > 0 && categories.filter((c) => c.name.trim()).length > 0;
 
   return (
     <div
@@ -121,8 +119,8 @@ function CreateSessionModal({
     >
       <div className="bg-[#13131f] border border-white/10 rounded-2xl w-full max-w-lg mx-4 shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="px-6 pt-6 pb-4 border-b border-white/8">
-          <div className="flex items-center justify-between mb-4">
+        <div className="px-6 pt-6 pb-4 border-b border-white/10">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center">
                 <svg className="w-4 h-4 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -132,6 +130,7 @@ function CreateSessionModal({
               <h2 className="text-white font-semibold">新しいセッション</h2>
             </div>
             <button
+              type="button"
               onClick={onClose}
               className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-500 hover:text-gray-300 hover:bg-white/5 transition-colors"
             >
@@ -140,184 +139,126 @@ function CreateSessionModal({
               </svg>
             </button>
           </div>
-
-          {/* Step indicator */}
-          <div className="flex items-center gap-2">
-            {[1, 2].map((s) => (
-              <div key={s} className="flex items-center gap-2">
-                <div
-                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold transition-all ${
-                    s < step
-                      ? "bg-indigo-500 text-white"
-                      : s === step
-                      ? "bg-indigo-500 text-white ring-2 ring-indigo-500/30"
-                      : "bg-white/10 text-gray-500"
-                  }`}
-                >
-                  {s < step ? (
-                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                  ) : s}
-                </div>
-                <span className={`text-xs ${s === step ? "text-gray-300" : "text-gray-600"}`}>
-                  {s === 1 ? "基本情報" : "カテゴリー"}
-                </span>
-                {s < 2 && <div className={`w-8 h-px ${s < step ? "bg-indigo-500" : "bg-white/10"}`} />}
-              </div>
-            ))}
-          </div>
         </div>
 
         {/* Body */}
-        <div className="px-6 py-5">
-          {step === 1 && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-medium text-gray-400 mb-1.5">
-                  セッションタイトル <span className="text-indigo-400">*</span>
-                </label>
-                <input
-                  autoFocus
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="例: Q2プロダクト戦略ブレスト"
-                  maxLength={50}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-indigo-500 focus:bg-white/8 transition-all"
-                />
-                <div className="flex justify-end mt-1">
-                  <span className="text-xs text-gray-600">{title.length}/50</span>
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-400 mb-1.5">
-                  テーマ・問い <span className="text-indigo-400">*</span>
-                </label>
-                <textarea
-                  value={topic}
-                  onChange={(e) => setTopic(e.target.value)}
-                  placeholder="例: 2026年Q2に注力すべきプロダクト機能は何か？"
-                  maxLength={100}
-                  rows={3}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-indigo-500 focus:bg-white/8 transition-all resize-none"
-                />
-                <div className="flex justify-end mt-1">
-                  <span className="text-xs text-gray-600">{topic.length}/100</span>
-                </div>
-              </div>
+        <div className="px-6 py-5 space-y-5 max-h-[70vh] overflow-y-auto">
+          {/* Title */}
+          <div>
+            <label className="block text-xs font-medium text-gray-400 mb-1.5">
+              セッションタイトル <span className="text-indigo-400">*</span>
+            </label>
+            <input
+              autoFocus
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="例: Q2プロダクト戦略ブレスト"
+              maxLength={50}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-indigo-500 transition-colors"
+            />
+            <div className="flex justify-end mt-1">
+              <span className="text-xs text-gray-600">{title.length}/50</span>
             </div>
-          )}
+          </div>
 
-          {step === 2 && (
-            <div className="space-y-3">
-              <p className="text-xs text-gray-500">
-                投稿を分類するカテゴリーを設定します。後から変更することもできます。
-              </p>
-              <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
-                {categories.map((cat) => (
-                  <div key={cat.id} className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setActiveColorId(activeColorId === cat.id ? null : cat.id)}
-                      className="w-8 h-8 rounded-lg flex-shrink-0 border-2 transition-all hover:scale-110"
-                      style={{
-                        backgroundColor: cat.color,
-                        borderColor: activeColorId === cat.id ? "white" : "transparent",
-                      }}
-                    />
-                    <input
-                      value={cat.name}
-                      onChange={(e) => updateCategory(cat.id, "name", e.target.value)}
-                      placeholder="カテゴリー名"
-                      maxLength={20}
-                      className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-indigo-500 transition-colors"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeCategory(cat.id)}
-                      disabled={categories.length <= 1}
-                      className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-600 hover:text-red-400 hover:bg-red-500/10 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
-                    >
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-                ))}
-              </div>
+          {/* Topic */}
+          <div>
+            <label className="block text-xs font-medium text-gray-400 mb-1.5">
+              テーマ・問い <span className="text-indigo-400">*</span>
+            </label>
+            <textarea
+              value={topic}
+              onChange={(e) => setTopic(e.target.value)}
+              placeholder="例: 2026年Q2に注力すべきプロダクト機能は何か？"
+              maxLength={100}
+              rows={3}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-indigo-500 transition-colors resize-none"
+            />
+            <div className="flex justify-end mt-1">
+              <span className="text-xs text-gray-600">{topic.length}/100</span>
+            </div>
+          </div>
 
-              {/* Color picker popover */}
-              {activeColorId && (
-                <div className="bg-[#1e1e30] border border-white/10 rounded-xl p-3">
-                  <p className="text-xs text-gray-500 mb-2">カラーを選択</p>
-                  <ColorPicker
-                    value={categories.find((c) => c.id === activeColorId)?.color ?? ""}
-                    onChange={(color) => updateCategory(activeColorId, "color", color)}
+          {/* Categories */}
+          <div>
+            <label className="block text-xs font-medium text-gray-400 mb-2">
+              カテゴリー
+            </label>
+            <div className="space-y-2">
+              {categories.map((cat) => (
+                <div key={cat.id} className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setActiveColorId(activeColorId === cat.id ? null : cat.id)}
+                    className="w-8 h-8 rounded-lg flex-shrink-0 border-2 transition-all hover:scale-110"
+                    style={{
+                      backgroundColor: cat.color,
+                      borderColor: activeColorId === cat.id ? "white" : "transparent",
+                    }}
                   />
+                  <input
+                    value={cat.name}
+                    onChange={(e) => updateCategory(cat.id, "name", e.target.value)}
+                    placeholder="カテゴリー名"
+                    maxLength={20}
+                    className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-indigo-500 transition-colors"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeCategory(cat.id)}
+                    disabled={categories.length <= 1}
+                    className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-600 hover:text-red-400 hover:bg-red-500/10 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
                 </div>
-              )}
-
-              {categories.length < 6 && (
-                <button
-                  type="button"
-                  onClick={addCategory}
-                  className="w-full flex items-center justify-center gap-2 rounded-xl border border-dashed border-white/15 py-2.5 text-sm text-gray-500 hover:text-gray-300 hover:border-white/30 transition-all"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                  </svg>
-                  カテゴリーを追加
-                </button>
-              )}
+              ))}
             </div>
-          )}
+
+            {activeColorId && (
+              <div className="mt-2 bg-[#1e1e30] border border-white/10 rounded-xl p-3">
+                <p className="text-xs text-gray-500 mb-2">カラーを選択</p>
+                <ColorPicker
+                  value={categories.find((c) => c.id === activeColorId)?.color ?? ""}
+                  onChange={(color) => updateCategory(activeColorId, "color", color)}
+                />
+              </div>
+            )}
+
+            {categories.length < 6 && (
+              <button
+                type="button"
+                onClick={addCategory}
+                className="mt-2 w-full flex items-center justify-center gap-2 rounded-xl border border-dashed border-white/15 py-2.5 text-sm text-gray-500 hover:text-gray-300 hover:border-white/30 transition-all"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                </svg>
+                カテゴリーを追加
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Footer */}
-        <div className="px-6 pb-6 flex gap-3">
-          {step === 1 ? (
-            <>
-              <button
-                type="button"
-                onClick={onClose}
-                className="flex-1 rounded-xl border border-white/10 py-2.5 text-sm text-gray-400 hover:bg-white/5 transition-colors"
-              >
-                キャンセル
-              </button>
-              <button
-                type="button"
-                disabled={!canProceed}
-                onClick={() => setStep(2)}
-                className="flex-1 rounded-xl bg-indigo-500 hover:bg-indigo-600 disabled:opacity-40 disabled:cursor-not-allowed py-2.5 text-sm text-white font-medium transition-colors flex items-center justify-center gap-1.5"
-              >
-                次へ
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                type="button"
-                onClick={() => setStep(1)}
-                className="flex-1 rounded-xl border border-white/10 py-2.5 text-sm text-gray-400 hover:bg-white/5 transition-colors flex items-center justify-center gap-1.5"
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                </svg>
-                戻る
-              </button>
-              <button
-                type="button"
-                disabled={!canSubmit}
-                onClick={handleSubmit}
-                className="flex-1 rounded-xl bg-indigo-500 hover:bg-indigo-600 disabled:opacity-40 disabled:cursor-not-allowed py-2.5 text-sm text-white font-medium transition-colors"
-              >
-                セッションを作成
-              </button>
-            </>
-          )}
+        <div className="px-6 pb-6 pt-4 border-t border-white/10 flex gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 rounded-xl border border-white/10 py-2.5 text-sm text-gray-400 hover:bg-white/5 transition-colors"
+          >
+            キャンセル
+          </button>
+          <button
+            type="button"
+            disabled={!canSubmit}
+            onClick={handleSubmit}
+            className="flex-1 rounded-xl bg-indigo-500 hover:bg-indigo-600 disabled:opacity-40 disabled:cursor-not-allowed py-2.5 text-sm text-white font-medium transition-colors"
+          >
+            セッションを作成
+          </button>
         </div>
       </div>
     </div>
