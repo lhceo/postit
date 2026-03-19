@@ -1,26 +1,28 @@
-import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
+"use client";
 
-export default async function HomePage({
-  searchParams,
-}: {
-  searchParams: Promise<{ error?: string }>;
-}) {
-  const { error } = await searchParams;
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
-  async function createSession(formData: FormData) {
-    "use server";
-    const title = (formData.get("title") as string)?.trim();
-    if (!title) {
-      redirect("/?error=empty");
+export default function HomePage() {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [error, setError] = useState(false);
+  const router = useRouter();
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle) {
+      setError(true);
+      return;
     }
-    const description = (formData.get("description") as string)?.trim() ?? "";
+
     const sessionId = `session-${Date.now()}`;
     const session = {
       id: sessionId,
-      title,
-      topic: description || title,
-      status: "active",
+      title: trimmedTitle,
+      topic: description.trim() || trimmedTitle,
+      status: "active" as const,
       participantCount: 0,
       postCount: 0,
       createdAt: new Date().toISOString(),
@@ -31,12 +33,15 @@ export default async function HomePage({
       ],
       posts: [],
     };
-    const cookieStore = await cookies();
-    cookieStore.set(`brainstorm-session-${sessionId}`, JSON.stringify(session), {
-      httpOnly: false,
-      maxAge: 60 * 60 * 24,
-    });
-    redirect(`/sessions/${sessionId}`);
+
+    try {
+      const existing = JSON.parse(localStorage.getItem("createdSessions") || "[]");
+      localStorage.setItem("createdSessions", JSON.stringify([session, ...existing]));
+    } catch {
+      // localStorage unavailable
+    }
+
+    router.push(`/sessions/${sessionId}`);
   }
 
   return (
@@ -52,23 +57,25 @@ export default async function HomePage({
       <div className="bg-white rounded-2xl shadow-md w-full max-w-md p-8">
         <h2 className="text-xl font-semibold text-gray-800 mb-6">新しいセッション</h2>
 
-        <form action={createSession} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <input
-              name="title"
               autoFocus
+              value={title}
+              onChange={(e) => { setTitle(e.target.value); setError(false); }}
               placeholder="テーマ（例：新サービスのアイデア）"
               maxLength={50}
               className="w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-800 placeholder-gray-400 text-sm focus:outline-none focus:border-orange-400 transition-colors"
             />
-            {error === "empty" && (
+            {error && (
               <p className="mt-1.5 text-xs text-red-500">テーマを入力してください</p>
             )}
           </div>
 
           <div>
             <textarea
-              name="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
               placeholder="説明（任意）"
               maxLength={200}
               rows={4}
